@@ -9,10 +9,43 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             line-height: 1.6;
+            background-color: #f9f9f9;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
         }
         table {
-            border-collapse: collapse;
             width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
         }
         th, td {
@@ -26,6 +59,7 @@
     </style>
 </head>
 <body>
+
     <h1>Fußballturnier-Erfassung</h1>
 
     <form id="setupForm">
@@ -64,8 +98,155 @@
     </div>
 
     <script>
-        // JavaScript-Code wie in deiner Originaldatei (Fussballturnier.html)
-        // Füge ihn hier ein oder belasse ihn in der Originaldatei.
-    </script>
-</body>
-</html>
+        const setupForm = document.getElementById('setupForm');
+        const teamNameForm = document.getElementById('teamNameForm');
+        const teamInputsContainer = document.getElementById('teamInputs');
+        const tournamentSection = document.getElementById('tournamentSection');
+        const standingsTableBody = document.querySelector('#standingsTable tbody');
+        const gamesContainer = document.getElementById('games');
+
+        let teams = [];
+        let standings = {};
+
+        // Teams erstellen
+        document.getElementById('generateTeams').addEventListener('click', () => {
+            const teamCount = parseInt(document.getElementById('teamCount').value, 10);
+            if (isNaN(teamCount) || teamCount < 2) {
+                alert('Bitte mindestens 2 Teams angeben.');
+                return;
+            }
+
+            teamInputsContainer.innerHTML = ''; // Vorherige Eingabefelder löschen
+            for (let i = 0; i < teamCount; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `Team ${i + 1}`;
+                input.required = true;
+                input.id = `team-${i}`;
+                teamInputsContainer.appendChild(input);
+                teamInputsContainer.appendChild(document.createElement('br'));
+            }
+            teamNameForm.style.display = 'block';
+        });
+
+        // Turnier starten
+        document.getElementById('startTournament').addEventListener('click', () => {
+            teams = [];
+            standings = {};
+            const teamInputs = document.querySelectorAll('#teamInputs input');
+            teamInputs.forEach(input => {
+                const teamName = input.value.trim();
+                if (teamName) {
+                    teams.push(teamName);
+                    standings[teamName] = {
+                        games: 0,
+                        wins: 0,
+                        draws: 0,
+                        losses: 0,
+                        goalsFor: 0,
+                        goalsAgainst: 0,
+                        points: 0,
+                    };
+                }
+            });
+
+            if (teams.length < 2) {
+                alert('Bitte mindestens 2 Teams benennen.');
+                return;
+            }
+
+            teamNameForm.style.display = 'none';
+            setupForm.style.display = 'none';
+            generateGames();
+            tournamentSection.style.display = 'block';
+            updateStandings();
+        });
+
+        // Spiele generieren (Round-Robin)
+        function generateGames() {
+            gamesContainer.innerHTML = '';
+            const matchups = roundRobin(teams);
+
+            matchups.forEach((round, roundIndex) => {
+                const roundHeader = document.createElement('h3');
+                roundHeader.textContent = `Spieltag ${roundIndex + 1}`;
+                gamesContainer.appendChild(roundHeader);
+
+                round.forEach(([team1, team2]) => {
+                    const gameDiv = document.createElement('div');
+                    gameDiv.innerHTML = `
+                        <label>${team1} vs. ${team2}</label>
+                        <input type="number" placeholder="Tore ${team1}" id="score-${team1}-${team2}" min="0">
+                        <input type="number" placeholder="Tore ${team2}" id="score-${team2}-${team1}" min="0">
+                        <button type="button" onclick="recordGame('${team1}', '${team2}')">Speichern</button>
+                    `;
+                    gamesContainer.appendChild(gameDiv);
+                });
+            });
+        }
+
+        // Round-Robin-Algorithmus
+        function roundRobin(teams) {
+            if (teams.length % 2 !== 0) {
+                teams.push(null); // Dummy-Team für ungerade Anzahl
+            }
+            const rounds = [];
+            const totalRounds = teams.length - 1;
+            const numMatchesPerRound = teams.length / 2;
+
+            for (let round = 0; round < totalRounds; round++) {
+                const roundMatches = [];
+                for (let match = 0; match < numMatchesPerRound; match++) {
+                    const home = teams[match];
+                    const away = teams[teams.length - 1 - match];
+                    if (home !== null && away !== null) {
+                        roundMatches.push([home, away]);
+                    }
+                }
+                teams.splice(1, 0, teams.pop()); // Rotationsprinzip
+                rounds.push(roundMatches);
+            }
+            return rounds;
+        }
+
+        // Spielstand speichern
+        function recordGame(team1, team2) {
+            const score1 = parseInt(document.getElementById(`score-${team1}-${team2}`).value, 10);
+            const score2 = parseInt(document.getElementById(`score-${team2}-${team1}`).value, 10);
+
+            if (isNaN(score1) || isNaN(score2)) {
+                alert('Bitte gültige Ergebnisse eingeben.');
+                return;
+            }
+
+            standings[team1].games++;
+            standings[team2].games++;
+
+            standings[team1].goalsFor += score1;
+            standings[team2].goalsFor += score2;
+
+            standings[team1].goalsAgainst += score2;
+            standings[team2].goalsAgainst += score1;
+
+            if (score1 > score2) {
+                standings[team1].wins++;
+                standings[team2].losses++;
+                standings[team1].points += 3;
+            } else if (score1 < score2) {
+                standings[team2].wins++;
+                standings[team1].losses++;
+                standings[team2].points += 3;
+            } else {
+                standings[team1].draws++;
+                standings[team2].draws++;
+                standings[team1].points++;
+                standings[team2].points++;
+            }
+
+            updateStandings();
+        }
+
+        // Tabelle aktualisieren
+        function updateStandings() {
+            standingsTableBody.innerHTML = '';
+            Object.entries(standings).sort((a, b) => b
