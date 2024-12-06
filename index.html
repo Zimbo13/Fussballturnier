@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fußballturnier-Erfassung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fußballturnier-Erfassung</h1>
+
+    <form id="setupForm">
+        <label for="teamCount">Anzahl der Teams:</label>
+        <input type="number" id="teamCount" name="teamCount" min="2" required>
+        <button type="button" id="generateTeams">Teams erstellen</button>
+    </form>
+
+    <form id="teamNameForm" style="display:none;">
+        <h2>Teamnamen eingeben</h2>
+        <div id="teamInputs"></div>
+        <button type="button" id="startTournament">Turnier starten</button>
+    </form>
+
+    <div id="tournamentSection" style="display:none;">
+        <h2>Spielplan</h2>
+        <div id="games"></div>
+        <h2>Tabelle</h2>
+        <table id="standingsTable">
+            <thead>
+                <tr>
+                    <th>Team</th>
+                    <th>Spiele</th>
+                    <th>Siege</th>
+                    <th>Unentschieden</th>
+                    <th>Niederlagen</th>
+                    <th>Tore</th>
+                    <th>Gegentore</th>
+                    <th>Punkte</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Tabelle wird dynamisch erstellt -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // JavaScript-Code wie in deiner Originaldatei (Fussballturnier.html)
+        // Füge ihn hier ein oder belasse ihn in der Originaldatei.
+    </script>
+</body>
+</html>
